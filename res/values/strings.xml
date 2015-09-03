@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">TrackPedometer</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    
+    <string name="map">地图</string>
+    <string name="step">计步</string>
+    <string name="history">历史</string>
+    <string name="analyse">分析</string>
+    <string name="setting">设置</string>
+    
+
+</resources>
