@@ -1091,7 +1091,7 @@ containing a value of this type.
         public static final int action_menu_divider=0x7f050016;
         public static final int action_menu_presenter=0x7f050017;
         public static final int action_mode_close_button=0x7f050024;
-        public static final int action_settings=0x7f050043;
+        public static final int action_settings=0x7f050046;
         public static final int activity_chooser_view_content=0x7f050025;
         public static final int always=0x7f05000b;
         public static final int beginning=0x7f050011;
@@ -1108,6 +1108,8 @@ containing a value of this type.
         public static final int home=0x7f050014;
         public static final int homeAsUp=0x7f050005;
         public static final int icon=0x7f05002a;
+        public static final int id_bt_pause=0x7f050044;
+        public static final int id_bt_start=0x7f050043;
         public static final int id_ll_map=0x7f05003d;
         public static final int id_tv_analyse=0x7f050041;
         public static final int id_tv_history=0x7f05003f;
@@ -1141,6 +1143,7 @@ containing a value of this type.
         public static final int showHome=0x7f050004;
         public static final int showTitle=0x7f050006;
         public static final int split_action_bar=0x7f05001e;
+        public static final int steps=0x7f050045;
         public static final int submit_area=0x7f050039;
         public static final int tabMode=0x7f050002;
         public static final int title=0x7f05002b;
