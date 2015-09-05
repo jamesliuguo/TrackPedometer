@@ -3,8 +3,6 @@ package com.zhenqianfan13354468.trackpedometer;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,20 +10,19 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
 
-	// ViewPager和Fragment的相关变量
 	private ViewPager mViewPager;
 	private FragmentPagerAdapter mFragmentAdapter;
 	private List<Fragment> mFragmentDatas;
 
-	// 当前的pageID
 	public int mCurrentPageIndex;
 
-	// 导航的5个TextView
 	private TextView mMapTextView;
 	private TextView mHistoryTextView;
 	private TextView mStepTextView;
@@ -37,7 +34,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-
+		
 		setContentView(R.layout.activity_main);
 
 		initView();

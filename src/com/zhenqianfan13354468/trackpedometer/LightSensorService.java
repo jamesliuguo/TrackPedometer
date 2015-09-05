@@ -1,7 +1,5 @@
 package com.zhenqianfan13354468.trackpedometer;
 
-import java.util.List;
-
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -13,7 +11,7 @@ import android.util.Log;
 
 public class LightSensorService extends Service implements SensorEventListener {
 
-	// Light ´«¸ÐÆ÷
+	// Light ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	private SensorManager lightSM;
 	Sensor lightSensor;
 
@@ -36,20 +34,20 @@ public class LightSensorService extends Service implements SensorEventListener {
 	protected void initLightSensor() {
 		isInPocket = false;
 
-		// »ñÈ¡ÏµÍ³·þÎñ£¨SENSOR_SERVICE)·µ»ØÒ»¸öSensorManager ´«¸ÐÆ÷¹ÜÀíÆ÷¶ÔÏó
+		// ï¿½ï¿½È¡ÏµÍ³ï¿½ï¿½ï¿½ï¿½SENSOR_SERVICE)ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½SensorManager ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		lightSM = (SensorManager) getSystemService(SENSOR_SERVICE);
-		// Í¨¹ýSensorManager¶ÔÏó»ñÈ¡ÏàÓ¦µÄ´«¸ÐÆ÷
+		// Í¨ï¿½ï¿½SensorManagerï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½
 		lightSensor = lightSM.getDefaultSensor(Sensor.TYPE_LIGHT);
-		// ×¢²áÏàÓ¦µÄSensorService
-		// ¸üÐÂËÙÂÊ»¹ÓÐSENSOR_DELAY_UI¡¢SENSOR_DELAY_FASTEST¡¢SENSOR_DELAY_GAMEµÈ£¬
-		// ¸ù¾Ý²»Í¬Ó¦ÓÃ£¬ÐèÒªµÄ·´Ó¦ËÙÂÊ²»Í¬£¬¾ßÌå¸ù¾ÝÊµ¼ÊÇé¿öÉè¶¨
+		// ×¢ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½SensorService
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê»ï¿½ï¿½ï¿½SENSOR_DELAY_UIï¿½ï¿½SENSOR_DELAY_FASTESTï¿½ï¿½SENSOR_DELAY_GAMEï¿½È£ï¿½
+		// ï¿½ï¿½ï¿½Ý²ï¿½Í¬Ó¦ï¿½Ã£ï¿½ï¿½ï¿½Òªï¿½Ä·ï¿½Ó¦ï¿½ï¿½ï¿½Ê²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨
 		lightSM.registerListener(this, lightSensor,
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		
+
 		Sensor sensor = event.sensor;
 		synchronized (this) {
 			if (sensor.getType() == Sensor.TYPE_LIGHT) {

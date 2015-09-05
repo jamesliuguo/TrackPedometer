@@ -18,7 +18,6 @@ import android.widget.Chronometer.OnChronometerTickListener;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class TabFragmentStep extends Fragment implements OnClickListener,
 		OnChronometerTickListener {
@@ -47,7 +46,7 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 			steps = AccelerometerSensorListener.CURRENT_SETP;
 			float percent = steps * 100 / pbPercent.getMax();
 			tvPercent.setText(String.valueOf(percent) + "%");
-			pbPercent.setProgress(steps);
+			pbPercent.setProgress(steps);//爆表？
 			tvSteps.setText("" + steps);
 
 		};
