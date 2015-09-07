@@ -1,13 +1,19 @@
 package com.zhenqianfan13354468.trackpedometer;
 
+import com.baidu.platform.comapi.map.m;
+
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -16,11 +22,16 @@ import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.Chronometer.OnChronometerTickListener;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class TabFragmentStep extends Fragment implements OnClickListener,
 		OnChronometerTickListener {
+	private static final String TAG = TabFragmentStep.class.getSimpleName();
+
+	SharedPreferences mySharedPreferences;
+	SharedPreferences.Editor editor;
 
 	private View view;
 	private Thread thread;
@@ -33,9 +44,31 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 	// private TextView tvPasstime;
 	private Chronometer cmPasstime;
 	private Button btControl;
+
 	private TextView tvCalorie;
 	private TextView tvDistance;
 	private TextView tvSpeed;
+
+	private TextView tvSex;
+	private TextView tvHeight;
+	private TextView tvWeight;
+	private TextView tvAge;
+	private TextView tvSensitive;
+	private TextView tvSteplen;
+
+	private AlertDialog.Builder dialog;
+	private NumberPicker numberPicker;
+
+	private float calorie;
+	private float distance;
+	private float speed;
+	
+	private String sex;
+	private float height;
+	private float weight;
+	private float steplen;
+	private int age;
+	private float sensitive;
 
 	private int steps;
 	private int seconds;
@@ -46,23 +79,108 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 			steps = AccelerometerSensorListener.CURRENT_SETP;
 			float percent = steps * 100 / pbPercent.getMax();
 			tvPercent.setText(String.valueOf(percent) + "%");
-			pbPercent.setProgress(steps);//爆表？
+			pbPercent.setProgress(steps);// 爆表？
 			tvSteps.setText("" + steps);
 
+			calAddData();
 		};
 	};
+
+	protected void calAddData() {
+		// TODO Auto-generated method stub
+//		公式来源：http://zhidao.baidu.com/question/97028686.html?fr=ala0
+		
+		distance = steps * steplen/(100);
+		tvDistance.setText(distance+"");
+		
+		float msSpeed = distance/seconds;
+		float kmhSpeed = (float) (3.6*msSpeed);
+		speed = kmhSpeed;
+		tvSpeed.setText(speed+"");
+		
+		double K = 30.0/(400.0/(msSpeed*60));
+		calorie = (float) (weight * (seconds/3600) * K);
+		tvCalorie.setText(calorie+"");
+		
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		this.view = inflater.inflate(R.layout.tab_fragment_step, container,
 				false);
+		Log.i(TAG, "onCreateView");
 
 		mSubThread();
 
 		initView();
 
 		return view;
+	}
+
+	@Override
+	public void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		Log.i(TAG, "onStart");
+
+		restorePersonalData();
+		initPersonalData();
+	}
+
+	private void restorePersonalData() {
+		// TODO Auto-generated method stub
+		mySharedPreferences = getActivity().getSharedPreferences(
+				"personalData", Activity.MODE_PRIVATE);
+		// editor = mySharedPreferences.edit();
+
+		sex = mySharedPreferences.getString("sex", "男");
+		height = mySharedPreferences.getFloat("height", 175);
+		weight = mySharedPreferences.getFloat("weight", 65);
+		steplen = mySharedPreferences.getFloat("steplen", 50);
+		age = mySharedPreferences.getInt("age", 24);
+		sensitive = mySharedPreferences.getFloat("sensitive", 8);
+
+	}
+
+	private void initPersonalData() {
+		tvSex.setText(sex);
+		tvHeight.setText(height + "");
+		tvWeight.setText(weight + "");
+		tvSteplen.setText(steplen + "");
+		tvAge.setText(age + "");
+		tvSensitive.setText(sensitive + "");
+		AccelerometerSensorListener.SENSITIVITY = sensitive;
+	}
+
+	@Override
+	public void onStop() {
+		// TODO Auto-generated method stub
+		// savePersonalData();
+		super.onStop();
+	}
+
+	@Override
+	public void onPause() {
+		// TODO Auto-generated method stub
+
+		super.onPause();
+	}
+
+	private void savePersonalData() {
+		// TODO Auto-generated method stub
+		Log.i(TAG, "save data");
+
+		editor = mySharedPreferences.edit();
+
+		editor.putString("sex", sex);
+		editor.putFloat("height", height);
+		editor.putFloat("weight", weight);
+		editor.putFloat("steplen", steplen);
+		editor.putInt("age", age);
+		editor.putFloat("sensitive", sensitive);
+
+		editor.commit();
 	}
 
 	@Override
@@ -97,17 +215,30 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		tvPercent = (TextView) view.findViewById(R.id.tv_percent);
 		pbPercent = (ProgressBar) view.findViewById(R.id.pb_percent);
 		tvGoal = (TextView) view.findViewById(R.id.tv_goal);
+		tvGoal.setOnClickListener(this);
 		tvSteps = (TextView) view.findViewById(R.id.tv_steps);
 		btReset = (Button) view.findViewById(R.id.bt_reset);
-		// tvPasstime = (TextView) view.findViewById(R.id.tv_passtime);
+		btReset.setOnClickListener(this);
 		cmPasstime = (Chronometer) view.findViewById(R.id.cm_passtime);
 		btControl = (Button) view.findViewById(R.id.bt_control);
+		btControl.setOnClickListener(this);
 		tvCalorie = (TextView) view.findViewById(R.id.tv_calorie);
 		tvDistance = (TextView) view.findViewById(R.id.tv_distance);
 		tvSpeed = (TextView) view.findViewById(R.id.tv_speed);
-		tvGoal.setOnClickListener(this);
-		btReset.setOnClickListener(this);
-		btControl.setOnClickListener(this);
+
+		tvSex = (TextView) view.findViewById(R.id.tv_sex);
+		tvSex.setOnClickListener(this);
+		tvHeight = (TextView) view.findViewById(R.id.tv_height);
+		tvHeight.setOnClickListener(this);
+		tvWeight = (TextView) view.findViewById(R.id.tv_weight);
+		tvWeight.setOnClickListener(this);
+		tvAge = (TextView) view.findViewById(R.id.tv_age);
+		tvAge.setOnClickListener(this);
+		tvSensitive = (TextView) view.findViewById(R.id.tv_sensitive);
+		tvSensitive.setOnClickListener(this);
+		tvSteplen = (TextView) view.findViewById(R.id.tv_steplen);
+		tvSteplen.setOnClickListener(this);
+
 		pbPercent.setMax(10000);
 		cmPasstime.setOnChronometerTickListener(this);
 	}
@@ -178,7 +309,132 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 			}
 
 			break;
+		case R.id.tv_sex:
+			dialog = new AlertDialog.Builder(getActivity());
+			final String[] sexlist = { "男", "女" };
+			// 设置一个下拉的列表选择项
+			dialog.setItems(sexlist, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					tvSex.setText(sexlist[which]);
+					sex = sexlist[which];
+					savePersonalData();
+				}
+			});
+			dialog.show();
+			break;
+		case R.id.tv_age:
+			dialog = new AlertDialog.Builder(getActivity());
+			numberPicker = new NumberPicker(getActivity());
+			numberPicker.setFocusable(true);
+			numberPicker.setFocusableInTouchMode(true);
+			numberPicker.setMaxValue(150);
+			numberPicker.setValue(Integer.parseInt(tvAge.getText().toString()
+					.trim()));
+			numberPicker.setMinValue(1);
+			dialog.setView(numberPicker);
+			dialog.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							tvAge.setText(numberPicker.getValue() + "");
+							age = numberPicker.getValue();
+							savePersonalData();
+						}
+					});
+			dialog.show();
+			break;
+		case R.id.tv_height:
+			dialog = new AlertDialog.Builder(getActivity());
+			numberPicker = new NumberPicker(getActivity());
+			numberPicker.setFocusable(true);
+			numberPicker.setFocusableInTouchMode(true);
+			numberPicker.setMaxValue(200);
+			numberPicker.setValue((int) Float.parseFloat(tvHeight.getText()
+					.toString().trim()));
+			numberPicker.setMinValue(20);
+			dialog.setView(numberPicker);
+			dialog.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							tvHeight.setText(numberPicker.getValue() + "");
+							height = numberPicker.getValue();
+							savePersonalData();
+						}
+					});
+			dialog.show();
+			break;
+		case R.id.tv_weight:
+			dialog = new AlertDialog.Builder(getActivity());
+			numberPicker = new NumberPicker(getActivity());
+			numberPicker.setFocusable(true);
+			numberPicker.setFocusableInTouchMode(true);
+			numberPicker.setMaxValue(200);
+			numberPicker.setValue((int) Float.parseFloat(tvWeight.getText()
+					.toString().trim()));
+			numberPicker.setMinValue(20);
+			dialog.setView(numberPicker);
+			dialog.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							tvWeight.setText(numberPicker.getValue() + "");
+							weight = numberPicker.getValue();
+							savePersonalData();
+						}
+					});
+			dialog.show();
+			break;
+		case R.id.tv_steplen:
+			dialog = new AlertDialog.Builder(getActivity());
+			numberPicker = new NumberPicker(getActivity());
+			numberPicker.setFocusable(true);
+			numberPicker.setFocusableInTouchMode(true);
+			numberPicker.setMaxValue(100);
+			numberPicker.setValue((int) Float.parseFloat(tvSteplen.getText()
+					.toString().trim()));
+			numberPicker.setMinValue(15);
+			dialog.setView(numberPicker);
+			dialog.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							tvSteplen.setText(numberPicker.getValue() + "");
+							steplen = numberPicker.getValue();
+							savePersonalData();
+
+						}
+					});
+			dialog.show();
+			break;
+		case R.id.tv_sensitive:
+			dialog = new AlertDialog.Builder(getActivity());
+			numberPicker = new NumberPicker(getActivity());
+			numberPicker.setFocusable(true);
+			numberPicker.setFocusableInTouchMode(true);
+			numberPicker.setMaxValue(10);
+			numberPicker.setMinValue(1);
+			numberPicker.setValue((int) Float.parseFloat(tvSensitive.getText()
+					.toString().trim()));
+			dialog.setView(numberPicker);
+			dialog.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							tvSensitive.setText(numberPicker.getValue() + "");
+							sensitive = numberPicker.getValue();
+							AccelerometerSensorListener.SENSITIVITY = sensitive;
+							savePersonalData();
+						}
+					});
+			dialog.show();
+			break;
 		}
+
+		// savePersonalData();
 	}
 
 	private void reset() {
@@ -187,6 +443,7 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		getActivity().stopService(intent);
 		AccelerometerSensorListener.reset();
 		steps = 0;
+		seconds = 0;
 
 		tvPercent.setText("0");
 		pbPercent.setProgress(0);
@@ -199,6 +456,9 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		tvCalorie.setText("0");
 		tvDistance.setText("0");
 		tvSpeed.setText("0");
+		
+		sensitive = 8;
+		AccelerometerSensorListener.SENSITIVITY = sensitive;
 
 	}
 
@@ -210,11 +470,12 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 	}
 
 	public String formatseconds() {
-		String hh = seconds / 3600 > 9 ? seconds / 3600 + "" : "0" + seconds / 3600;
-		String mm = (seconds % 3600) / 60 > 9 ? (seconds % 3600) / 60 + "" : "0"
-				+ (seconds % 3600) / 60;
-		String ss = (seconds % 3600) % 60 > 9 ? (seconds % 3600) % 60 + "" : "0"
-				+ (seconds % 3600) % 60;
+		String hh = seconds / 3600 > 9 ? seconds / 3600 + "" : "0" + seconds
+				/ 3600;
+		String mm = (seconds % 3600) / 60 > 9 ? (seconds % 3600) / 60 + ""
+				: "0" + (seconds % 3600) / 60;
+		String ss = (seconds % 3600) % 60 > 9 ? (seconds % 3600) % 60 + ""
+				: "0" + (seconds % 3600) % 60;
 
 		return hh + ":" + mm + ":" + ss;
 	}

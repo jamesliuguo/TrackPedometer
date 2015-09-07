@@ -4,9 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <LinearLayout
+   <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:orientation="horizontal" >
 
         <TextView
@@ -15,7 +15,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="100%" />
+            android:text="0.0%"
+            android:textColor="@android:color/holo_blue_bright"
+            android:textSize="18sp" />
 
         <ProgressBar
             android:id="@+id/pb_percent"
@@ -23,7 +25,9 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="8"
-            android:gravity="center" />
+            
+            android:gravity="center"
+             />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -35,14 +39,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="目标" />
+                android:text="目标"
+                android:textColor="#7B7B7B"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/tv_goal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="1000" />
+                android:text="10000"
+                android:textColor="@android:color/holo_blue_bright"
+                android:textSize="18sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -51,12 +59,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:textColor="@android:color/holo_blue_bright"
         android:text="0"
         android:textSize="50sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:orientation="horizontal" >
 
         <Button
@@ -64,102 +73,60 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
+             android:background="@drawable/step_btn_background"
+            android:textColor="@drawable/step_btn_color"
             android:text="重置" />
-
-        <!--
-             <TextView
-            android:id="@+id/tv_passtime"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:gravity="center"
-            android:text="00:01:08"
-            android:textSize="20sp" />
-        -->
 
         <Chronometer
             android:id="@+id/cm_passtime"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:format="00:00:00"
-            android:textColor="#00FF00"
-            android:textSize="20sp"
             android:layout_weight="5"
-            android:gravity="center" />
+            android:format="00:00:00"
+            android:gravity="center"
+            android:textColor="@android:color/holo_blue_dark"
+            
+            android:textSize="20sp" />
 
         <Button
             android:id="@+id/bt_control"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@drawable/step_btn_background"
+            android:textColor="@drawable/step_btn_color"
             android:text="开始" />
     </LinearLayout>
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal" >
+        android:layout_height="1dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/darker_gray" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical" >
+    <include layout="@layout/step_addmsg" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="卡路里(千卡)" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"
+        android:background="#d0d0d0" />
 
-            <TextView
-                android:id="@+id/tv_calorie"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="1000" />
-        </LinearLayout>
+    <include layout="@layout/step_settting" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical" >
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"
+        android:background="#d0d0d0" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="路程(km)" />
-
-            <TextView
-                android:id="@+id/tv_distance"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="1000" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical" >
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="均速(km/h)" />
-
-            <TextView
-                android:id="@+id/tv_speed"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="100" />
-        </LinearLayout>
-    </LinearLayout>
+    <include layout="@layout/step_mode" />
 
 </LinearLayout>

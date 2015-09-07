@@ -29,56 +29,11 @@
         android:gravity="center" >
 
         <TextView
-            android:id="@+id/id_tv_history"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/history"
-            android:textColor="#000000" 
-            android:clickable="true" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="3dp"
-        android:layout_height="fill_parent"
-        android:layout_weight="1"
-        android:gravity="center" >
-
-        <TextView
             android:id="@+id/id_tv_step"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/step"
             android:textColor="#008000"  
-            android:clickable="true"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="3dp"
-        android:layout_height="fill_parent"
-        android:layout_weight="1"
-        android:gravity="center" >
-
-        <TextView
-            android:id="@+id/id_tv_analyse"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/analyse"
-            android:textColor="#000000"  
-            android:clickable="true"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="3dp"
-        android:layout_height="fill_parent"
-        android:layout_weight="1"
-        android:gravity="center" >
-
-        <TextView
-            android:id="@+id/id_tv_setting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/setting"
-            android:textColor="#000000"  
             android:clickable="true"/>
     </LinearLayout>
 

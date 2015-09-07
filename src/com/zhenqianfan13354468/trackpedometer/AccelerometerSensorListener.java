@@ -9,7 +9,7 @@ import android.hardware.SensorManager;
 public class AccelerometerSensorListener implements SensorEventListener {
 
 	public static int CURRENT_SETP = 0;
-	public static float SENSITIVITY = 10; // SENSITIVITYÁéÃô¶È
+	public static float SENSITIVITY = 8; // SENSITIVITYï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	
 	
 	private float mLastValues[] = new float[3 * 2];
@@ -38,9 +38,9 @@ public class AccelerometerSensorListener implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		Sensor sensor = event.sensor;
-//		¼ÓËø
+//		ï¿½ï¿½ï¿½ï¿½
 		synchronized (this) {
-//			¼ÓËÙ¶È´«¸ÐÆ÷
+//			ï¿½ï¿½ï¿½Ù¶È´ï¿½ï¿½ï¿½ï¿½ï¿½
 			if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
 				float vSum = 0;
