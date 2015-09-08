@@ -71,7 +71,15 @@ public class AccelerometerSensorListener implements SensorEventListener {
 							end = System.currentTimeMillis();
 							if (end - start > 500) {
 
-								CURRENT_SETP++;
+//								CURRENT_SETP++;
+								if (TabFragmentStep.isInPocketMode) {
+									if (LightSensorService.isInPocket) {
+										CURRENT_SETP++;
+									}
+								}
+								else {
+									CURRENT_SETP++;
+								}
 								
 								
 								mLastMatch = extType;

@@ -1,10 +1,12 @@
 package com.zhenqianfan13354468.trackpedometer;
 
-import com.baidu.platform.comapi.map.m;
+import java.util.HashMap;
+
+import com.zhenqianfan13354468.trackpedometer.ChartView.Mstyle;
+import com.zhenqianfan13354468.trackpedometer.R.id;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,10 +26,13 @@ import android.widget.Chronometer.OnChronometerTickListener;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
 public class TabFragmentStep extends Fragment implements OnClickListener,
-		OnChronometerTickListener {
+		OnChronometerTickListener, OnCheckedChangeListener {
 	private static final String TAG = TabFragmentStep.class.getSimpleName();
 
 	SharedPreferences mySharedPreferences;
@@ -54,24 +59,37 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 	private TextView tvWeight;
 	private TextView tvAge;
 	private TextView tvSensitive;
+	private TextView tvLightive;
 	private TextView tvSteplen;
 
+	private RadioGroup rgMode;
+	private RadioButton rbStepNormal;
+	private RadioButton rbStepPocket;
+	public static TextView tvLight;
+
+	public static ChartView cvLight;
+	
 	private AlertDialog.Builder dialog;
 	private NumberPicker numberPicker;
 
 	private float calorie;
 	private float distance;
 	private float speed;
-	
+
 	private String sex;
 	private float height;
 	private float weight;
 	private float steplen;
 	private int age;
 	private float sensitive;
+	private float lightive;
 
 	private int steps;
 	private int seconds;
+
+	public static float LIGHT_BORDER = 20;
+	public static boolean isInPocketMode = false;
+
 
 	Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -88,22 +106,27 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 
 	protected void calAddData() {
 		// TODO Auto-generated method stub
-//		公式来源：http://zhidao.baidu.com/question/97028686.html?fr=ala0
-		
-		distance = steps * steplen/(100);
-		tvDistance.setText(distance+"");
-		
-		float msSpeed = distance/seconds;
-		float kmhSpeed = (float) (3.6*msSpeed);
-		speed = kmhSpeed;
-		tvSpeed.setText(speed+"");
-		
-		double K = 30.0/(400.0/(msSpeed*60));
-		calorie = (float) (weight * (seconds/3600) * K);
-		tvCalorie.setText(calorie+"");
-		
-	}
+		// 公式来源：http://zhidao.baidu.com/question/97028686.html?fr=ala0
 
+		distance = steps * steplen / (100);
+		tvDistance.setText(distance + "");
+		float msSpeed;
+
+		if (seconds == 0) {
+			msSpeed = 0;
+		} else {
+			msSpeed = distance / seconds;
+		}
+		float kmhSpeed = (float) (3.6 * msSpeed);
+		speed = kmhSpeed;
+		tvSpeed.setText(speed + "");
+
+		double K = 30.0 / (400.0 / (msSpeed * 60));
+		calorie = (float) (weight * (seconds / 3600) * K);
+		tvCalorie.setText(calorie + "");
+
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -114,6 +137,9 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		mSubThread();
 
 		initView();
+
+		Intent intent = new Intent(getActivity(), LightSensorService.class);
+		getActivity().startService(intent);
 
 		return view;
 	}
@@ -126,6 +152,8 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 
 		restorePersonalData();
 		initPersonalData();
+		
+
 	}
 
 	private void restorePersonalData() {
@@ -140,6 +168,8 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		steplen = mySharedPreferences.getFloat("steplen", 50);
 		age = mySharedPreferences.getInt("age", 24);
 		sensitive = mySharedPreferences.getFloat("sensitive", 8);
+		lightive = mySharedPreferences.getFloat("lightive", 10);
+		LIGHT_BORDER = lightive;
 
 	}
 
@@ -151,6 +181,8 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		tvAge.setText(age + "");
 		tvSensitive.setText(sensitive + "");
 		AccelerometerSensorListener.SENSITIVITY = sensitive;
+		tvLightive.setText(lightive + "");
+		LIGHT_BORDER = lightive;
 	}
 
 	@Override
@@ -179,7 +211,7 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		editor.putFloat("steplen", steplen);
 		editor.putInt("age", age);
 		editor.putFloat("sensitive", sensitive);
-
+		editor.putFloat("lightive", lightive);
 		editor.commit();
 	}
 
@@ -203,6 +235,7 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 							Message msg = new Message();
 							handler.sendMessage(msg);
 						}
+
 					}
 				}
 			});
@@ -236,9 +269,19 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		tvAge.setOnClickListener(this);
 		tvSensitive = (TextView) view.findViewById(R.id.tv_sensitive);
 		tvSensitive.setOnClickListener(this);
+		tvLightive = (TextView) view.findViewById(R.id.tv_lightive);
+		tvLightive.setOnClickListener(this);
 		tvSteplen = (TextView) view.findViewById(R.id.tv_steplen);
 		tvSteplen.setOnClickListener(this);
 
+		rgMode = (RadioGroup) view.findViewById(R.id.step_mode);
+		rgMode.setOnCheckedChangeListener(this);
+		rbStepNormal = (RadioButton) view.findViewById(R.id.step_normal);
+		rbStepPocket = (RadioButton) view.findViewById(R.id.step_pocket);
+		tvLight = (TextView) view.findViewById(R.id.tv_light);
+		
+		cvLight = (ChartView)view.findViewById(R.id.cv_light);
+		
 		pbPercent.setMax(10000);
 		cmPasstime.setOnChronometerTickListener(this);
 	}
@@ -273,6 +316,7 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		switch (view.getId()) {
 		case R.id.tv_goal:
 			final EditText editText = new EditText(getActivity());
+			editText.setText(tvGoal.getText());
 			new AlertDialog.Builder(getActivity())
 					.setTitle("请输入")
 					.setIcon(android.R.drawable.ic_dialog_info)
@@ -432,6 +476,29 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 					});
 			dialog.show();
 			break;
+		case R.id.tv_lightive:
+			final EditText editText1 = new EditText(getActivity());
+			editText1.setText(tvLightive.getText());
+			// 设置类型
+			new AlertDialog.Builder(getActivity())
+					.setTitle("请输入")
+					.setIcon(android.R.drawable.ic_dialog_info)
+					.setView(editText1)
+					.setPositiveButton("确定",
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									tvLightive.setText(editText1.getText()
+											.toString().trim());
+									lightive = Float.parseFloat(editText1
+											.getText().toString().trim());
+									LIGHT_BORDER = lightive;
+									savePersonalData();
+
+								}
+							}).setNegativeButton("取消", null).show();
+			break;
 		}
 
 		// savePersonalData();
@@ -445,20 +512,23 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 		steps = 0;
 		seconds = 0;
 
-		tvPercent.setText("0");
+		tvPercent.setText("0.0");
 		pbPercent.setProgress(0);
 		tvGoal.setText("10000");
-		tvSteps.setText("0");
+		tvSteps.setText("0.0");
 		// tvPasstime.setText("00:00:00");
 		cmPasstime.setBase(SystemClock.elapsedRealtime());
 		cmPasstime.stop();
 		btControl.setText("开始");
-		tvCalorie.setText("0");
-		tvDistance.setText("0");
-		tvSpeed.setText("0");
-		
-		sensitive = 8;
-		AccelerometerSensorListener.SENSITIVITY = sensitive;
+		tvCalorie.setText("0.0");
+		tvDistance.setText("0.0");
+		tvSpeed.setText("0.0");
+
+		// sensitive = 8;
+		// AccelerometerSensorListener.SENSITIVITY = sensitive;
+		// lightive = 10;
+		// LIGHT_BORDER = lightive;
+		// savePersonalData();
 
 	}
 
@@ -478,5 +548,18 @@ public class TabFragmentStep extends Fragment implements OnClickListener,
 				: "0" + (seconds % 3600) % 60;
 
 		return hh + ":" + mm + ":" + ss;
+	}
+
+	@Override
+	public void onCheckedChanged(RadioGroup group, int checkID) {
+		Intent intent = new Intent(getActivity(), LightSensorService.class);
+		if (checkID == rbStepPocket.getId()) {
+			// getActivity().startService(intent);
+			isInPocketMode = true;
+		} else if (checkID == rbStepNormal.getId()) {
+			// getActivity().stopService(intent);
+			isInPocketMode = false;
+		}
+
 	}
 }

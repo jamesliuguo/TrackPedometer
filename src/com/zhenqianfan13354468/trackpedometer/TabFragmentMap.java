@@ -22,6 +22,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -57,12 +58,19 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.UiSettings;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.core.SearchResult;
+import com.baidu.mapapi.search.geocode.GeoCodeResult;
+import com.baidu.mapapi.search.geocode.GeoCoder;
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.zhenqianfan13354468.trackpedometer.MyOrientationListener.OnOrientationListener;
 
 import de.mindpipe.android.logging.log4j.LogConfigurator;
 
-public class TabFragmentMap extends Fragment implements OnClickListener {
+public class TabFragmentMap extends Fragment implements OnClickListener,
+		OnGetGeoCoderResultListener {
 	private static final String TAG = TabFragmentMap.class.getSimpleName();
 
 	// 百度地图SDK相关
@@ -70,6 +78,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 	private static MapView mMapView = null;
 	private static BaiduMap mBaiduMap;
 	private UiSettings ui;
+	private GeoCoder mSearch = null; // 搜索模块，也可去掉地图模块独立使用
 
 	// 定位相关
 	LocationClient mLocClient;
@@ -100,6 +109,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 	// dynamidDistanceLimit
 	private double disGPS;
 	private double disBD;
+	private float accuracy;
 
 	// 当前优化修正后的位置对应的BDLocation
 	private BDLocation mBDLocation;
@@ -121,6 +131,11 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 
 	// 日志记录
 	private Logger logger;
+
+	private Thread thread;
+	private boolean network = false;
+	private boolean agps = false;
+	private boolean gps = false;
 
 	// 处理自带GPS传感器和百度SDK分别得到的位置坐标，进行优化修正
 	private Handler handler = new Handler() {
@@ -175,6 +190,8 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 				}
 			}
 
+			accuracy = mBDLocation.getRadius();
+			
 			latlng = new LatLng(mBDLocation.getLatitude(),
 					mBDLocation.getLongitude());
 			if (isRecording) {
@@ -244,7 +261,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 		Log.i(TAG, "onCreate");
 		configLog();
 		logger.info("onCreate");
-		logger.log(java.util.logging.Level.INFO, "hello");
+
 
 		mConnectivityManager = (ConnectivityManager) getActivity()
 				.getSystemService(FragmentActivity.CONNECTIVITY_SERVICE);
@@ -261,9 +278,12 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 		view = inflater.inflate(R.layout.tab_fragment_map, container, false);
 		Log.i(TAG, "onCreatview");
 		logger.info("onCreatview");
+
 		initView();
 		initMap();
 		initLocation();
+
+		mMonitorThread();
 
 		return view;
 	}
@@ -386,6 +406,11 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 		MapStatusUpdate msu = MapStatusUpdateFactory.zoomTo(17.0f);// 17 100m
 		mBaiduMap.setMapStatus(msu);
 		modifyLocMarker(LocationMode.NORMAL); // 普通模式
+
+		// 初始化搜索模块，注册事件监听
+		mSearch = GeoCoder.newInstance();
+		mSearch.setOnGetGeoCodeResultListener(this);
+
 	}
 
 	// 看着玩的
@@ -584,6 +609,12 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 
 	// 设置定位点并移到中心
 	private void centerToMyLocation() {
+		if (mBDLocation == null
+				|| (mBDLocation.getLatitude() == 0 && mBDLocation
+						.getLongitude() == 0)) {
+			Toast.makeText(getActivity(), "暂无法定位，请检查网络设置。", Toast.LENGTH_SHORT).show();
+			return;
+		}
 		setLocationData(mBDLocation);
 
 		double mLatitude = mBDLocation.getLatitude();
@@ -642,11 +673,30 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 		switch (view.getId()) {
 		case R.id.bt_detLocation:
 			mLocClient.requestLocation();// 请求定位
-
 			centerToMyLocation();
-			if (mBDLocation != null) {
-				Toast.makeText(getActivity(), mBDLocation.getAddrStr(),
-						Toast.LENGTH_SHORT).show();// 显示物理位置，要改下
+			if (mBDLocation != null
+					&& (mBDLocation.getLatitude() != 0 && mBDLocation
+							.getLongitude() != 0)) {
+				if (mBDLocation.getAddrStr() != ""
+						&& mBDLocation.getAddrStr() != ""
+						&& mBDLocation.getAddrStr() != null) {// 百度定位地址有物理地址
+					Toast.makeText(getActivity(), mBDLocation.getAddrStr(),
+							Toast.LENGTH_SHORT).show();// 显示物理位置，要改下
+				} else {// 纯GPS定位地址反查物理地址
+					LatLng ptCenter = new LatLng(mBDLocation.getLatitude(),
+							mBDLocation.getLongitude());
+					// 反Geo搜索
+					mSearch.reverseGeoCode(new ReverseGeoCodeOption()
+							.location(ptCenter));
+				}
+
+			} else {
+				Toast.makeText(getActivity(), "暂无法定位，请检查网络设置。",
+						Toast.LENGTH_SHORT).show();
+			}
+			if (!network) {
+				Toast.makeText(getActivity(), "当前网络不可用，请检查网络状态",
+						Toast.LENGTH_SHORT).show();
 			}
 			break;
 		case R.id.bt_ctrlTrack:
@@ -685,59 +735,96 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 
 	}
 
-	private boolean canShow = true;
+	private boolean firstVis = true;
 
-	//不用回调函数检查GPS
 	@Override
 	public void setUserVisibleHint(boolean isVisibleToUser) {
 		super.setUserVisibleHint(isVisibleToUser);
 
 		if (isVisibleToUser) {
 			// 相当于Fragment的onResume
+			Log.i(TAG, "visible");
+			
+			if (firstVis) {
+				firstVis = false;
+				if (network) {
+					Toast.makeText(getActivity(), "当前网络可用", Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(getActivity(), "当前网络不可用，请检查网络状态",
+							Toast.LENGTH_SHORT).show();
+				}
+				if (gps) {
+					Toast.makeText(getActivity(), "GPS已打开", Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(getActivity(), "GPS已关闭，请开启GPS",
+							Toast.LENGTH_SHORT).show();
+				}
 
-			boolean isNetable = false;
-			if (mConnectivityManager != null) {
-				NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
-				if (info != null && info.isConnected()) {
-					// 当前网络是连接的
-					if (info.getState() == NetworkInfo.State.CONNECTED) {
-						// 当前所连接的网络可用
-						isNetable = true;
-					}
+			} else {
+				if (!network) {
+					Toast.makeText(getActivity(), "当前网络不可用，请检查网络状态",
+							Toast.LENGTH_SHORT).show();
+				}
+
+				if (!gps) {
+					Toast.makeText(getActivity(), "GPS已关闭，请开启GPS",
+							Toast.LENGTH_SHORT).show();
 				}
 			}
-			if (isNetable && canShow) {
-				Toast.makeText(getActivity(), "当前网络可用", Toast.LENGTH_SHORT)
-						.show();
-			} else if (!isNetable) {
-				Toast.makeText(getActivity(), "当前网络不可用", Toast.LENGTH_SHORT)
-						.show();
-				canShow = true;
-			}
 
-			// AGPS:通过WLAN或移动网络(3G/2G)确定的位置（也称作AGPS，辅助GPS定位。主要用于在室内或遮盖物（建筑群或茂密的深林等）密集的地方定位）
-			boolean agps = locationManager
-					.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-			// GPS:通过GPS卫星定位，定位级别可以精确到街（通过24颗卫星定位，在室外和空旷的地方定位准确、速度快）
-			boolean gps = locationManager
-					.isProviderEnabled(LocationManager.GPS_PROVIDER);
-			if (gps && canShow) {
-				Toast.makeText(getActivity(), "GPS已打开", Toast.LENGTH_SHORT)
-						.show();
-				canShow = false;
-				if (!isNetable) {
-					canShow = true;
-				}
-			} else if (!gps) {
-				Toast.makeText(getActivity(), "GPS尚未打开", Toast.LENGTH_SHORT)
-						.show();
-				canShow = true;
-			}
 		} else {
 			// 相当于Fragment的onPause
 			// Log.v("tag", "pause");
 
 		}
+
+	}
+
+	private void mMonitorThread() {
+		if (thread == null) {
+			thread = new Thread(new Runnable() {
+				public void run() {
+					Log.i(TAG, "subThread run");
+					while (true) {
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+						monitorNetworkAndGPS();
+					}
+				}
+			});
+			thread.start();
+		}
+
+	}
+
+	private void monitorNetworkAndGPS() {
+		Log.i(TAG, "monitoring network");
+		if (mConnectivityManager != null) {
+			NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
+			if (info != null && info.isConnected()) {
+				// 当前网络是连接的
+				if (info.getState() == NetworkInfo.State.CONNECTED) {
+					// 当前所连接的网络可用
+					network = true;
+				} else {
+					network = false;
+				}
+			}
+		}
+
+		// AGPS:通过WLAN或移动网络(3G/2G)确定的位置（也称作AGPS，辅助GPS定位。主要用于在室内或遮盖物（建筑群或茂密的深林等）密集的地方定位）
+		if (locationManager != null) {
+			agps = locationManager
+					.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+			// GPS:通过GPS卫星定位，定位级别可以精确到街（通过24颗卫星定位，在室外和空旷的地方定位准确、速度快）
+			gps = locationManager
+					.isProviderEnabled(LocationManager.GPS_PROVIDER);
+		}
+
 	}
 
 	@Override
@@ -750,6 +837,24 @@ public class TabFragmentMap extends Fragment implements OnClickListener {
 		mMapView.onDestroy();
 		mMapView = null;
 		super.onDestroy();
+	}
+
+	@Override
+	public void onGetGeoCodeResult(GeoCodeResult arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onGetReverseGeoCodeResult(ReverseGeoCodeResult result) {
+		if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {
+			Toast.makeText(getActivity(), "抱歉，当前地理位置无法识别", Toast.LENGTH_SHORT)
+					.show();
+			return;
+		}
+		Toast.makeText(getActivity(), result.getAddress(), Toast.LENGTH_LONG)
+				.show();
+
 	}
 
 }
