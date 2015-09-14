@@ -3,9 +3,9 @@ package com.zhenqianfan13354468.trackpedometer;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -19,6 +19,10 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
 
+/**
+ * 主Activity，统领Fragment和menu子菜单
+ *
+ */
 public class MainActivity extends FragmentActivity implements OnClickListener {
 
 	private ViewPager mViewPager;
@@ -106,6 +110,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 	}
 
+	
+	/**
+	 * 恢复文字颜色
+	 */
 	protected void resetTextView() {
 		mMapTextView.setTextColor(Color.BLACK);
 		mStepTextView.setTextColor(Color.BLACK);
@@ -125,6 +133,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 	}
 
+	//重载返回键
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
 		int keyCode = event.getKeyCode();
@@ -150,8 +159,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		int group = 1;
-		menu.add(group, 1, 1, "后台运行");
-		menu.add(group, 2, 2, "退出应用");
+		menu.add(group, 1, 1, getString(R.string.main_about));
+		menu.add(group, 2, 2, getString(R.string.main_help));
+		menu.add(group, 3, 3, getString(R.string.main_background));
+		menu.add(group, 4, 4, getString(R.string.main_exit));
 		return true;
 	}
 
@@ -159,9 +170,29 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case 1:
-			moveTaskToBack(false);
+			final TextView tvAbout = new TextView(this);
+			String about = "    此为传感器和信息物理网络的设计与实现课程作品，感谢你的使用！";
+			tvAbout.setText(about);
+			tvAbout.setSingleLine(false);
+			tvAbout.setTextSize(20);
+			new AlertDialog.Builder(this).setTitle(R.string.main_about)
+					.setIcon(android.R.drawable.ic_dialog_info)
+					.setView(tvAbout).setPositiveButton(R.string.main_positive, null).show();
 			break;
 		case 2:
+			final TextView tvHelp = new TextView(this);
+			String help = "    温馨提醒：计步页面可通过点击相关数据位置从而对该数据进行设置。";
+			tvHelp.setText(help);
+			tvHelp.setSingleLine(false);
+			tvHelp.setTextSize(20);
+			new AlertDialog.Builder(this).setTitle(R.string.main_help)
+					.setIcon(android.R.drawable.ic_dialog_info)
+					.setView(tvHelp).setPositiveButton(R.string.main_positive, null).show();
+			break;
+		case 3:
+			moveTaskToBack(false);
+			break;
+		case 4:
 			android.os.Process.killProcess(android.os.Process.myPid()); // 获取PID
 			System.exit(0); // 常规java、c#的标准退出法，返回值为0代表正常退出
 			break;

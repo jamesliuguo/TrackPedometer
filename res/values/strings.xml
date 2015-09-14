@@ -4,12 +4,60 @@
     <string name="app_name">TrackPedometer</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    
-    <string name="map">地图</string>
-    <string name="step">计步</string>
-    <string name="history">历史</string>
-    <string name="analyse">分析</string>
-    <string name="setting">设置</string>
-    
 
+    <!-- MainActivity.java -->
+    <string name="main_about">关于</string>
+    <string name="main_help">帮助</string>
+    <string name="main_background">后台运行</string>
+    <string name="main_exit">退出应用</string>
+    <string name="main_positive">确定</string>
+    <string name="main_map">地图</string>
+    <string name="main_step">计步</string>
+    <string name="main_history">历史</string>
+    <string name="main_analyse">分析</string>
+    <string name="main_setting">设置</string>
+
+    <!-- LightSensorService.java -->
+    <string name="light_curve_head">感光度变化(Lus-Time)&#160;&#160;</string>
+
+    <!-- mobile_msg.xml -->
+    <string name="mobile_msg_tv_light">感光度变化(Lus-Time)&#160;&#160;0</string>
+    
+    <!-- step_mode.xml -->
+    <string name="step_mode_sensitive">灵敏度</string>
+    <string name="step_mode_tv_sensitive">8</string>
+    <string name="step_mode_step_normal">普通模式</string>
+    <string name="step_mode_step_pocket">口袋模式</string>
+    <string name="step_mode_lightive">光敏度</string>
+    <string name="step_mode_tv_lightive">10</string>
+
+    <!-- step_msg.xml -->
+    <string name="step_msg_calorie">卡路里(Cal)</string>
+    <string name="step_msg_tv_calorie">0</string>
+    <string name="step_msg_distance">路程(m)</string>
+    <string name="step_msg_tv_distance">0</string>
+    <string name="step_msg_speed">均速(km/h)</string>
+    <string name="step_msg_tv_speed">0</string>
+    
+    <!-- step_setting.xml -->
+    <string name="step_setting_sex">性别</string>
+    <string name="step_setting_tv_sex">男</string>
+    <string name="step_setting_height">身高(cm)</string>
+    <string name="step_setting_tv_height">175</string>
+    <string name="step_setting_weight">体重(kg)</string>
+    <string name="step_setting_tv_weight">65</string>
+    <string name="step_setting_steplen">步长(cm)</string>
+    <string name="step_setting_tv_steplen">50</string>
+    <string name="step_setting_age">年龄</string>
+    <string name="step_setting_tv_age">24</string>
+    
+    <!-- tab_fragment_step.xml -->
+    <string name="tab_fragment_step_tv_percent">0.0%</string>
+    <string name="tab_fragment_step_goal">目标</string>
+    <string name="tab_fragment_step_tv_goal">10000</string>
+    <string name="tab_fragment_step_tv_step">0</string>
+    <string name="tab_fragment_step_bt_reset">重置</string>
+    <string name="tab_fragment_step_bt_control">开始</string>
+    
+    
 </resources>

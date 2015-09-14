@@ -4,6 +4,10 @@ import com.baidu.mapapi.SDKInitializer;
 
 import android.app.Application;
 
+/**
+ * 全局性初始化百度地图SDK的context信息
+ *
+ */
 public class GlobalApplication extends Application {
 	@Override
 	public void onCreate() {

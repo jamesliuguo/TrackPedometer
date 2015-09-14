@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="50dp"
+    android:baselineAligned="false"
     android:orientation="horizontal" >
 
     <LinearLayout
@@ -14,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="灵敏度"
+            android:text="@string/step_mode_sensitive"
             android:textColor="#7B7B7B"
             android:textSize="15sp" />
 
@@ -23,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="8"
+            android:text="@string/step_mode_tv_sensitive"
             android:textColor="@android:color/holo_blue_light"
             android:textSize="18sp" />
     </LinearLayout>
@@ -48,9 +49,9 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                android:gravity="center"
                 android:checked="true"
-                android:text="普通模式"
+                android:gravity="center"
+                android:text="@string/step_mode_step_normal"
                 android:textColor="@drawable/step_mode_btn" />
 
             <RadioButton
@@ -60,7 +61,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="口袋模式"
+                android:text="@string/step_mode_step_pocket"
                 android:textColor="@drawable/step_mode_btn" />
         </RadioGroup>
     </LinearLayout>
@@ -75,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="光敏度"
+            android:text="@string/step_mode_lightive"
             android:textColor="#7B7B7B"
             android:textSize="15sp" />
 
@@ -84,7 +85,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="10"
+            android:text="@string/step_mode_tv_lightive"
             android:textColor="@android:color/holo_blue_light"
             android:textSize="18sp" />
     </LinearLayout>

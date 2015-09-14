@@ -6,12 +6,15 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+/**
+ * 加速度传感器的监听器
+ *
+ */
 public class AccelerometerSensorListener implements SensorEventListener {
 
-	public static int CURRENT_SETP = 0;
-	public static float SENSITIVITY = 8; // SENSITIVITY������
-	
-	
+	public static int CURRENT_SETP = 0; // 步数
+	public static float SENSITIVITY = 8; // 灵敏度
+
 	private float mLastValues[] = new float[3 * 2];
 	private float mScale[] = new float[2];
 	private float mYOffset;
@@ -22,11 +25,11 @@ public class AccelerometerSensorListener implements SensorEventListener {
 	private float mLastExtremes[][] = { new float[3 * 2], new float[3 * 2] };
 	private float mLastDiff[] = new float[3 * 2];
 	private int mLastMatch = -1;
-	
+
 	public static void reset() {
 		CURRENT_SETP = 0;
 	}
-	
+
 	public AccelerometerSensorListener(Context context) {
 		super();
 		int h = 480;
@@ -38,9 +41,9 @@ public class AccelerometerSensorListener implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		Sensor sensor = event.sensor;
-//		����
+		// 加锁
 		synchronized (this) {
-//			���ٶȴ�����
+
 			if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
 				float vSum = 0;
@@ -56,7 +59,7 @@ public class AccelerometerSensorListener implements SensorEventListener {
 				if (direction == -mLastDirections[k]) {
 					// Direction changed
 					int extType = (direction > 0 ? 0 : 1);
-															
+
 					mLastExtremes[extType][k] = mLastValues[k];
 					float diff = Math.abs(mLastExtremes[extType][k]
 							- mLastExtremes[1 - extType][k]);
@@ -70,18 +73,16 @@ public class AccelerometerSensorListener implements SensorEventListener {
 								&& isNotContra) {
 							end = System.currentTimeMillis();
 							if (end - start > 500) {
-
-//								CURRENT_SETP++;
-								if (TabFragmentStep.isInPocketMode) {
+								// 视为走了一步
+								// CURRENT_SETP++;
+								if (TabFragmentStep.isInPocketMode) {// 判断口袋模式
 									if (LightSensorService.isInPocket) {
 										CURRENT_SETP++;
 									}
-								}
-								else {
+								} else {
 									CURRENT_SETP++;
 								}
-								
-								
+
 								mLastMatch = extType;
 								start = end;
 							}

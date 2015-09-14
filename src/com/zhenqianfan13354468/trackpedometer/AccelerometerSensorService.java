@@ -6,16 +6,17 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 
+/**
+ * åŠ é€Ÿä¼ æ„Ÿå™¨çš„service
+ *
+ */
 public class AccelerometerSensorService extends Service {
 
-	// Accelerometer´«¸ĞÆ÷
 	private SensorManager accelerometerSM;
 	private AccelerometerSensorListener accelerometerSD;
 	Sensor accelerometerSensor;
 
-	
-	
-	public static boolean isRun;
+	public static boolean isRun;// serviceæ˜¯å¦åœ¨è¿è¡Œ
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -37,28 +38,28 @@ public class AccelerometerSensorService extends Service {
 	private void initAccelerometerSensor() {
 		isRun = false;
 
-		// »ñÈ¡ÏµÍ³·şÎñ£¨SENSOR_SERVICE)·µ»ØÒ»¸öSensorManager ´«¸ĞÆ÷¹ÜÀíÆ÷¶ÔÏó
+		// è·å–ä¼ æ„Ÿå™¨ç®¡ç†å™¨
 		accelerometerSM = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-		// Í¨¹ıSensorManager¶ÔÏó»ñÈ¡ÏàÓ¦µÄÖØÁ¦´«¸ĞÆ÷
+		// è·å–åŠ é€Ÿåº¦ä¼ æ„Ÿå™¨
 		if (accelerometerSM != null) {
 			accelerometerSensor = accelerometerSM
 					.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		}
 
-		// ×¢²áÏàÓ¦µÄSensorService
+		// ä¸ºåŠ é€Ÿåº¦ä¼ æ„Ÿå™¨æ³¨å†Œç›‘å¬äº‹ä»¶
 		if (accelerometerSensor != null) {
 			accelerometerSD = new AccelerometerSensorListener(this);
-			// ¸üĞÂËÙÂÊ»¹ÓĞSENSOR_DELAY_UI¡¢SENSOR_DELAY_FASTEST¡¢SENSOR_DELAY_GAMEµÈ£¬
-			// ¸ù¾İ²»Í¬Ó¦ÓÃ£¬ĞèÒªµÄ·´Ó¦ËÙÂÊ²»Í¬£¬¾ßÌå¸ù¾İÊµ¼ÊÇé¿öÉè¶¨
+			// SENSOR_DELAY_UIï¼ŒSENSOR_DELAY_FASTESTï¼ŒSENSOR_DELAY_GAME
 			accelerometerSM.registerListener(accelerometerSD,
 					accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
 		}
 
+		// åˆ¤æ–­æ˜¯å¦å·²æ­£å¸¸å¼€å¯
 		if (accelerometerSM != null && accelerometerSensor != null
 				&& accelerometerSD != null) {
 			isRun = true;
-		} 
+		}
 	}
 
 	@Override
@@ -68,10 +69,12 @@ public class AccelerometerSensorService extends Service {
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
+		
 		if (accelerometerSD != null) {
 			accelerometerSM.unregisterListener(accelerometerSD);
 		}
 		isRun = false;
+		super.onDestroy();
 	}
+
 }

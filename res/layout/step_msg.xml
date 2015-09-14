@@ -18,7 +18,7 @@
             android:gravity="center"
             android:textSize="15sp"
             android:textColor="#7B7B7B"
-            android:text="卡路里(kcal)" />
+            android:text="@string/step_msg_calorie" />
 
         <TextView
             android:id="@+id/tv_calorie"
@@ -27,7 +27,7 @@
             android:gravity="center"
             android:textColor="@android:color/holo_blue_light"
             android:textSize="30sp"
-            android:text="0" />
+            android:text="@string/step_msg_tv_calorie" />
     </LinearLayout>
 
     <LinearLayout
@@ -42,7 +42,7 @@
             android:gravity="center"
             android:textColor="#7B7B7B"
             android:textSize="15sp"
-            android:text="路程(m)" />
+            android:text="@string/step_msg_distance" />
 
         <TextView
             android:id="@+id/tv_distance"
@@ -51,7 +51,7 @@
             android:gravity="center"
             android:textSize="30sp"
             android:textColor="@android:color/holo_blue_light"
-            android:text="0" />
+            android:text="@string/step_msg_tv_distance" />
     </LinearLayout>
 
     <LinearLayout
@@ -66,7 +66,7 @@
             android:gravity="center"
             android:textSize="15sp"
             android:textColor="#7B7B7B"
-            android:text="均速(km/h)" />
+            android:text="@string/step_msg_speed" />
 
         <TextView
             android:id="@+id/tv_speed"
@@ -75,7 +75,7 @@
             android:gravity="center"
             android:textSize="30sp"
             android:textColor="@android:color/holo_blue_light"
-            android:text="0" />
+            android:text="@string/step_msg_tv_speed" />
     </LinearLayout>
 
 </LinearLayout>

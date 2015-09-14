@@ -1,11 +1,7 @@
 package com.zhenqianfan13354468.trackpedometer;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
-import com.zhenqianfan13354468.trackpedometer.ChartView.Mstyle;
-
-import android.R.integer;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -16,31 +12,41 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.zhenqianfan13354468.trackpedometer.ChartView.Mstyle;
+
+/**
+ * 亮度传感器的service
+ *
+ */
 public class LightSensorService extends Service implements SensorEventListener {
 	private static final String TAG = LightSensorService.class.getSimpleName();
-	// private static final String TAG_STRING = "LightSensorService";
 
 	private SensorManager lightSM;
 	private Sensor lightSensor;
 
-	public static float LIGHT = 100000;
+	public static float LIGHT = 100000;//亮度
 	public static boolean isInPocket = false;
-	private ChartView cvLight;
-	private static HashMap<Double, Double> map;
-
-	int lightNum;
+	
+	private ChartView cvLight;//曲线控件
+	private static HashMap<Double, Double> map;//曲线数据
+	private int lightNum;//曲线数据个数
+	private final int LIGHT_MAX_NUM = 21;//曲线数据最大个数
 
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
 		Log.i(TAG, "onCreate");
+		
+		//开启子线程
 		new Thread(new Runnable() {
 			public void run() {
 				Log.i(TAG, "subThread run");
 				initLightSensor();
 			}
 		}).start();
+		
+		//初始化曲线控件
 		cvLight = TabFragmentStep.cvLight;
 		lightNum = 0;
 		map = new HashMap<Double, Double>();
@@ -53,6 +59,9 @@ public class LightSensorService extends Service implements SensorEventListener {
 
 	}
 
+	/**
+	 * 初始化亮度传感器
+	 */
 	protected void initLightSensor() {
 		lightSM = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -64,7 +73,7 @@ public class LightSensorService extends Service implements SensorEventListener {
 
 	public static Canvas canvas = new Canvas();
 
-	@SuppressWarnings("rawtypes")
+	//亮度变化时会触发
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		Log.i(TAG, "onSensorChanged");
@@ -73,7 +82,7 @@ public class LightSensorService extends Service implements SensorEventListener {
 		synchronized (this) {
 			if (sensor.getType() == Sensor.TYPE_LIGHT) {
 				LIGHT = event.values[0];
-				TabFragmentStep.tvLight.setText("感光度变化(Lus-Time)  "
+				TabFragmentStep.tvLight.setText(getString(R.string.light_curve_head)
 						+ LightSensorService.LIGHT);
 				Log.i(TAG, LIGHT + "");
 
@@ -84,7 +93,7 @@ public class LightSensorService extends Service implements SensorEventListener {
 				}
 
 
-				if (lightNum < 21) {
+				if (lightNum < LIGHT_MAX_NUM) {
 					map.put((double) lightNum, (double) LIGHT);
 					lightNum++;
 				} else {
@@ -129,11 +138,10 @@ public class LightSensorService extends Service implements SensorEventListener {
 	@Override
 	public void onDestroy() {
 		Log.i(TAG, "onDestroy");
-		super.onDestroy();
+		
 		if (lightSM != null) {
 			lightSM.unregisterListener(this);
 		}
-
+		super.onDestroy();
 	}
-
 }

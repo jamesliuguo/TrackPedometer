@@ -1,9 +1,15 @@
 package com.zhenqianfan13354468.trackpedometer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -22,12 +28,12 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -64,10 +70,17 @@ import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
+import com.baidu.mapapi.utils.CoordinateConverter;
+import com.baidu.mapapi.utils.CoordinateConverter.CoordType;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.zhenqianfan13354468.trackpedometer.MyOrientationListener.OnOrientationListener;
 
 import de.mindpipe.android.logging.log4j.LogConfigurator;
+
+/**
+ * 地图的Fragment
+ *
+ */
 
 public class TabFragmentMap extends Fragment implements OnClickListener,
 		OnGetGeoCoderResultListener {
@@ -91,7 +104,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 	private static ConnectivityManager mConnectivityManager;
 	private String provider;
 	private BDLocation curBDLocation = null; // 百度定位获得的地址
-	private Location curGPSLocation = null;// 自带GPS传感器获得的地址
+	private BDLocation curGPSLocation = null;// 自带GPS传感器获得的地址
 
 	private static final int FROM_GPS = 0; // 地址从自带GPS传感器获得
 	private final static int FROM_BD_GPS = 1;// 地址从百度通过GPS获得
@@ -100,16 +113,16 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 
 	private final static double DISTANCE_MAX_LIMIT = 10000;// 最大容忍定位偏差，
 															// 用于普通定位，防止突然暴走
-	private final static double DISTANCE_MID_LIMIT = 1000;// 最小容忍定位偏差 ，用于画轨迹上限
-	private final static double DISTANCE_MIN_LIMIT = 50;// 最小容忍定位偏差 ，用于画轨迹下限
+	private final static double DISTANCE_MID_LIMIT = 2000;// 适中容忍定位偏差 ，用于画轨迹上限
+	private final static double DISTANCE_MIN_LIMIT = 200;// 最小容忍定位偏差 ，用于立即画轨迹下限
 	private double dynamidDistanceLimit = 1000;// 动态适中容忍定位偏差
-	private double lastDistance = 50;// 上一次允许的两点distance
-	private double alpha = 0.9; // a 暂取 0.9吧
-	// 权重公式：dynamidDistanceLimit = alpha * lastDistance + (1-alpha) *
-	// dynamidDistanceLimit
+	private double lastDistance = 100;// 上一次允许的两点distance
+	private double alpha = 0.8; // a 暂取 0.8吧
+	// 权重公式：dynamidDistanceLimit = alpha * lastDistance + (1-alpha) * dynamidDistanceLimit
 	private double disGPS;
 	private double disBD;
 	private float accuracy;
+	private int UPDATE_TIME = 3000;
 
 	// 当前优化修正后的位置对应的BDLocation
 	private BDLocation mBDLocation;
@@ -117,12 +130,12 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 	// 控件
 	private PopupMenu popupMenu;
 	private Button bt_detLocation;
-	private Button bt_ctrlTrack;
+	public static Button bt_ctrlTrack;
 	private Button bt_mapMenu;
 	Menu popMenu;
 
 	// 轨迹相关
-	boolean isRecording = false;
+	public static boolean isRecording = false;
 	boolean isRecodStart = false;
 	boolean isRecordEnd = false;
 	private LatLng lastLatLng;
@@ -132,12 +145,16 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 	// 日志记录
 	private Logger logger;
 
+	//网络和GPS状态
 	private Thread thread;
 	private boolean network = false;
 	private boolean agps = false;
 	private boolean gps = false;
 
-	// 处理自带GPS传感器和百度SDK分别得到的位置坐标，进行优化修正
+	
+	/**
+	 * 处理自带GPS传感器和百度SDK分别得到的位置坐标，进行优化修正
+	 */
 	private Handler handler = new Handler() {
 
 		public void handleMessage(android.os.Message msg) {
@@ -176,7 +193,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 
 			if (disBD == 0) {
 				if (disGPS < DISTANCE_MIN_LIMIT) {
-					Location2BDLocation(curGPSLocation, mBDLocation);
+					mBDLocation = curGPSLocation;
 				}
 			} else if (disGPS == 0) {
 				if (disBD < DISTANCE_MIN_LIMIT) {
@@ -186,7 +203,23 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 				if (disBD <= disGPS) {
 					mBDLocation = curBDLocation;
 				} else {
-					Location2BDLocation(curGPSLocation, mBDLocation);
+					mBDLocation = curGPSLocation;
+				}
+			}
+			if (mBDLocation == null) {
+				if (curBDLocation == null) {
+					mBDLocation = curGPSLocation;
+				}
+				else if (curGPSLocation == null) {
+					mBDLocation = curBDLocation;
+				}
+				else if (curBDLocation == null && curBDLocation == null) {
+					Toast.makeText(getActivity(), "暂时无法定位，请检查网络设置。", Toast.LENGTH_SHORT);
+				}
+				else if (disBD <= disGPS) {
+					mBDLocation = curBDLocation;
+				} else {
+					mBDLocation = curGPSLocation;
 				}
 			}
 
@@ -203,8 +236,9 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 					modifyLocMarker(LocationMode.FOLLOWING);
 					setLocationData(mBDLocation);
 				} else {
-					// 过滤不合理坐标!!!!!!!!!!!，同时采取权重来补救早期的定位错误。
+					// 过滤不合理坐标!!!!!!!!!!!，同时采取权重公式来补偿早期的定位误差。
 					if (filter()) {
+						lastLatLng = nowLatLng;
 						nowLatLng = latlng;
 
 						centerToMyLocation();
@@ -216,7 +250,10 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		};
 	};
 
-	// 过滤不合理坐标!!!!!!!!!!!，同时采取权重来补救早期的定位错误。
+	
+	/**
+	 * 过滤不合理坐标!!!!!!!!!!!，同时采取权重公式来补偿早期的定位误差。
+	 */
 	protected boolean filter() {
 		double dis = getDistance(lastLatLng, nowLatLng);
 		if (dis <= DISTANCE_MIN_LIMIT) {
@@ -319,18 +356,23 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		mMapView.onResume();
 	}
 
-	// 初始化GPS
+	
+	/**
+	 * 初始化GPS
+	 */
 	private void initGPS() {
 
 		// // 从GPS获取最近的定位信息，缓存数据
 		provider = LocationManager.GPS_PROVIDER;
-		curGPSLocation = locationManager.getLastKnownLocation(provider);
-		if (curGPSLocation != null && curGPSLocation.getLatitude() != 0
-				&& curGPSLocation.getLongitude() != 0) {
+		Location location;
+		location = locationManager.getLastKnownLocation(provider);
+		if (location != null && location.getLatitude() != 0
+				&& location.getLongitude() != 0) {
 			// handler.sendEmptyMessage(FROM_GPS);
 			// 首先要有数据
 			mBDLocation = new BDLocation();
-			Location2BDLocation(curGPSLocation, mBDLocation);
+			Location2BDLocation(location, curGPSLocation);
+			mBDLocation = curGPSLocation;
 		}
 
 		// 绑定监听，有4个参数
@@ -353,8 +395,9 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 					public void onProviderEnabled(String provider) {
 						// TODO Auto-generated method stub
 						// updateMapFromGPS(locationManager.getLastKnownLocation(provider));
-						curGPSLocation = locationManager
-								.getLastKnownLocation(provider);
+						Location2BDLocation(locationManager
+								.getLastKnownLocation(provider), curGPSLocation);
+						
 					}
 
 					@Override
@@ -367,7 +410,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 					public void onLocationChanged(Location location) {
 						// TODO Auto-generated method stub
 						// updateMapFromGPS(location);
-						curGPSLocation = location;
+						Location2BDLocation(location, curGPSLocation);
 						if (curGPSLocation != null
 								&& curGPSLocation.getLatitude() != 0
 								&& curGPSLocation.getLongitude() != 0) {
@@ -379,19 +422,86 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 				});
 	}
 
-	// 普通location转百度location
+	
+	/**
+	 * @param location
+	 * @param bdLocation
+	 * 普通location转百度location
+	 */
 	private void Location2BDLocation(Location location, BDLocation bdLocation) {
 		if (location == null || bdLocation == null) {
 			return;
 		}
-		bdLocation.setLatitude(location.getLatitude());
-		bdLocation.setLongitude(location.getLongitude());
+		
+		// 将GPS设备采集的原始GPS坐标转换成百度坐标    
+		LatLng sourceLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+		CoordinateConverter converter  = new CoordinateConverter();    
+		converter.from(CoordType.GPS);    
+		// sourceLatLng待转换坐标    
+		converter.coord(sourceLatLng);    
+		LatLng desLatLng = converter.convert(); 
+		
+		bdLocation.setLatitude(desLatLng.latitude);
+		bdLocation.setLongitude(desLatLng.longitude);
+		
+		
+		
 		bdLocation.setSpeed(location.getSpeed());
 		bdLocation.setAltitude(location.getAltitude());
 		bdLocation.setDirection(location.getBearing());
 	}
 
-	// 初始化地图
+	/**
+	 * 用纠偏url转换原始坐标为百度坐标
+	 * @throws IOException 
+	 * From http://www.cnblogs.com/zhaohuionly/p/3142623.html
+	 */
+	public void correct_from_url(Location bdloc) throws IOException {
+		String str = String.format("http://api.map.baidu.com/ag/coord/convert?from=0&to=4&x=%f&y=%f", bdloc.getLatitude(), bdloc.getLongitude());
+		URL url = new URL(str);
+        URLConnection connection = url.openConnection();
+        
+        connection.setDoOutput(true);
+        OutputStreamWriter out = new OutputStreamWriter(connection
+                .getOutputStream(), "utf-8");
+        out.flush();
+        out.close();
+        
+        String sCurrentLine;
+        String sTotalString;
+        sCurrentLine = "";
+        sTotalString = "";
+        InputStream l_urlStream;
+        l_urlStream = connection.getInputStream();
+        BufferedReader l_reader = new BufferedReader(new InputStreamReader(
+                l_urlStream));
+        while ((sCurrentLine = l_reader.readLine()) != null) {
+            if (!sCurrentLine.equals(""))
+                sTotalString += sCurrentLine;
+        }
+        String mapX="", mapY="";
+        System.out.println(sTotalString);
+        sTotalString = sTotalString.substring(1, sTotalString.length()-1);
+        String[] results = sTotalString.split("\\,");
+        if (results.length == 3){
+            if (results[0].split("\\:")[1].equals("0")){
+                mapX = results[1].split("\\:")[1];
+                mapY = results[2].split("\\:")[1];
+                mapX = mapX.substring(1, mapX.length()-1);
+                mapY = mapY.substring(1, mapY.length()-1);
+                mapX = new String(Base64.decode(mapX, Base64.DEFAULT));
+                mapY = new String(Base64.decode(mapY, Base64.DEFAULT));
+                
+                bdloc.setLatitude(Double.parseDouble(mapX));
+                bdloc.setLongitude(Double.parseDouble(mapY));
+                //Toast.makeText(getActivity(), "坐标已修正", Toast.LENGTH_SHORT).show();
+            }
+        }
+	}
+	
+	/**
+	 * 初始化地图
+	 */
 	private void initMap() {
 		mMapView = (MapView) view.findViewById(R.id.bmapView);
 		mBaiduMap = mMapView.getMap();
@@ -429,7 +539,10 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		}
 	}
 
-	// 初始化定位
+	
+	/**
+	 * 初始化定位
+	 */
 	private void initLocation() {
 
 		// 开启定位图层
@@ -442,7 +555,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		option.setOpenGps(true);// 打开gps
 		option.setCoorType("bd09ll"); // 设置百度经纬度坐标系格式
 		option.setIsNeedAddress(true);// 返回的定位结果包含地址信息 反编译获得具体位置，只有网络定位才可以
-		option.setScanSpan(1000);// 设置发起定位请求的间隔时间为1000ms
+		option.setScanSpan(UPDATE_TIME);// 设置发起定位请求的间隔时间为1000ms
 		// option.setNeedDeviceDirect(true);// 返回的定位结果包含手机机头的方向
 		option.setAddrType("all"); // 设置使其可以获取具体的位置，把精度纬度换成具体地址
 		// option.disableCache(true);//禁止启用缓存定位
@@ -461,7 +574,10 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 				});
 	}
 
-	// 初始化菜单控件
+	
+	/**
+	 * 初始化菜单控件和子菜单
+	 */
 	private void initView() {
 		bt_detLocation = (Button) view.findViewById(R.id.bt_detLocation);
 		bt_detLocation.setOnClickListener(this);
@@ -469,6 +585,7 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		bt_ctrlTrack.setOnClickListener(this);
 		bt_mapMenu = (Button) view.findViewById(R.id.bt_mapmenu);
 		bt_mapMenu.setOnClickListener(this);
+		
 		// 左上角菜单
 		popupMenu = new PopupMenu(getActivity(),
 				view.findViewById(R.id.bt_mapmenu));
@@ -549,7 +666,11 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		});
 	}
 
-	// 修改地图模式和定位图标
+	
+	/**
+	 * @param locationMode
+	 * 修改地图模式和定位图标
+	 */
 	private void modifyLocMarker(LocationMode locationMode) {
 		// 修改为自定义marker图标
 		// BitmapDescriptor mCurrentMarker = BitmapDescriptorFactory
@@ -558,6 +679,14 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		mBaiduMap.setMyLocationConfigeration(new MyLocationConfiguration(
 				mCurrentMode, true, null));
 	}
+	
+	// /**
+	// * 用经验参数修正百度坐标
+	// */
+	// public void correct(BDLocation bdloc){
+	// bdloc.setLatitude(bdloc.getLatitude()-0.01185);
+	// bdloc.setLongitude(bdloc.getLongitude()-0.00328);
+	// }
 
 	/**
 	 * 定位SDK监听函数
@@ -573,17 +702,23 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 				// mLocClient.requestOfflineLocation();//请求一次离线地址
 				return;
 			}
+			
 			// 更新当前位置经纬度
+			curBDLocation = location;
+			
+//			correct(curBDLocation);
+			
+			
 			double mLatitude = location.getLatitude();
 			double mLongtitude = location.getLongitude();
-			curBDLocation = location;
-
-			//
 
 			if (isFirstLoc) {
 
 				isFirstLoc = false;
-
+				
+				latlng = new LatLng(location.getLatitude(), location.getLongitude());
+				nowLatLng = latlng;
+				
 				// 默认承认百度地图的第一次定位
 				mBDLocation = location;
 				// setLocationData(location); // 更新定位数据，设置定位点
@@ -607,7 +742,10 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		}
 	}
 
-	// 设置定位点并移到中心
+	
+	/**
+	 * 设置定位点并移到中心
+	 */
 	private void centerToMyLocation() {
 		if (mBDLocation == null
 				|| (mBDLocation.getLatitude() == 0 && mBDLocation
@@ -628,7 +766,13 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 
 	}
 
-	// 更新定位数据，设置定位点
+	
+
+
+	/**
+	 * @param location
+	 * 更新定位数据，设置定位点
+	 */
 	private void setLocationData(BDLocation location) {
 		MyLocationData locData = new MyLocationData.Builder()//
 				.direction(mCurrentX)//
@@ -642,7 +786,12 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 
 	}
 
-	// 画线
+	
+	/**
+	 * @param latlng1
+	 * @param latlng2
+	 * 画线
+	 */
 	public void drawPolyline(LatLng latlng1, LatLng latlng2) {
 
 		List<LatLng> points = new ArrayList<LatLng>();
@@ -653,7 +802,12 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		mBaiduMap.addOverlay(polyline);
 	}
 
-	// 画Marker图标
+	
+	/**
+	 * @param latlng
+	 * @param id_source
+	 * 画Marker图标
+	 */
 	public void drawMaker(LatLng latlng, int id_source) {
 		// 构建Marker图标
 		BitmapDescriptor bitmap = BitmapDescriptorFactory
@@ -665,6 +819,8 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		mBaiduMap.addOverlay(option);
 
 	}
+	
+	public static boolean showflag = true;
 
 	@Override
 	public void onClick(View view) {
@@ -702,8 +858,10 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 		case R.id.bt_ctrlTrack:
 			if (!isRecording) {
 				bt_ctrlTrack.setBackgroundResource(R.drawable.stop);
-				Toast.makeText(getActivity(), "开始记录轨迹...", Toast.LENGTH_SHORT)
-						.show();
+				if (showflag) {
+					Toast.makeText(getActivity(), "开始记录轨迹...", Toast.LENGTH_LONG)
+					.show();
+				}
 				isRecording = true;
 				isRecodStart = true;
 				// 清除所有图层
@@ -725,6 +883,10 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 				if (latlng != null) {
 					isRecordEnd = false;
 					drawMaker(latlng, R.drawable.endpoint);
+				}
+				
+				if (TabFragmentStep.isOpenMap) {
+					TabFragmentStep.isOpenMap = false;
 				}
 			}
 			break;
@@ -780,6 +942,10 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 
 	}
 
+	
+	/**
+	 * 监测网络和GPS的子线程
+	 */
 	private void mMonitorThread() {
 		if (thread == null) {
 			thread = new Thread(new Runnable() {
@@ -801,8 +967,12 @@ public class TabFragmentMap extends Fragment implements OnClickListener,
 
 	}
 
+	
+	/**
+	 * 监测网络和GPS是否可用
+	 */
 	private void monitorNetworkAndGPS() {
-		Log.i(TAG, "monitoring network");
+//		Log.i(TAG, "monitoring network");
 		if (mConnectivityManager != null) {
 			NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
 			if (info != null && info.isConnected()) {

@@ -1136,16 +1136,17 @@ containing a value of this type.
         public static final int id_viewpager=0x7f05003c;
         public static final int ifRoom=0x7f05000a;
         public static final int image=0x7f050027;
-        public static final int it_back=0x7f05005a;
-        public static final int it_clearMaket=0x7f05005d;
-        public static final int it_compass=0x7f050060;
-        public static final int it_exit=0x7f05005b;
-        public static final int it_follow=0x7f05005f;
-        public static final int it_normal=0x7f05005e;
-        public static final int it_normalmap=0x7f050061;
-        public static final int it_satellitemap=0x7f050062;
-        public static final int it_screenshot=0x7f05005c;
-        public static final int it_setGps=0x7f050063;
+        public static final int it_about=0x7f05005a;
+        public static final int it_back=0x7f050063;
+        public static final int it_clearMaket=0x7f05005c;
+        public static final int it_compass=0x7f05005f;
+        public static final int it_exit=0x7f050064;
+        public static final int it_follow=0x7f05005e;
+        public static final int it_normal=0x7f05005d;
+        public static final int it_normalmap=0x7f050060;
+        public static final int it_satellitemap=0x7f050061;
+        public static final int it_screenshot=0x7f05005b;
+        public static final int it_setGps=0x7f050062;
         public static final int listMode=0x7f050001;
         public static final int list_item=0x7f050029;
         public static final int middle=0x7f050012;
@@ -1303,13 +1304,62 @@ containing a value of this type.
          */
         public static final int abc_shareactionprovider_share_with_application=0x7f0a000b;
         public static final int action_settings=0x7f0a000f;
-        public static final int analyse=0x7f0a0013;
         public static final int app_name=0x7f0a000d;
         public static final int hello_world=0x7f0a000e;
-        public static final int history=0x7f0a0012;
-        public static final int map=0x7f0a0010;
-        public static final int setting=0x7f0a0014;
-        public static final int step=0x7f0a0011;
+        /**  LightSensorService.java 
+         */
+        public static final int light_curve_head=0x7f0a001a;
+        /**  MainActivity.java 
+         */
+        public static final int main_about=0x7f0a0010;
+        public static final int main_analyse=0x7f0a0018;
+        public static final int main_background=0x7f0a0012;
+        public static final int main_exit=0x7f0a0013;
+        public static final int main_help=0x7f0a0011;
+        public static final int main_history=0x7f0a0017;
+        public static final int main_map=0x7f0a0015;
+        public static final int main_positive=0x7f0a0014;
+        public static final int main_setting=0x7f0a0019;
+        public static final int main_step=0x7f0a0016;
+        /**  mobile_msg.xml 
+         */
+        public static final int mobile_msg_tv_light=0x7f0a001b;
+        public static final int step_mode_lightive=0x7f0a0020;
+        /**  step_mode.xml 
+         */
+        public static final int step_mode_sensitive=0x7f0a001c;
+        public static final int step_mode_step_normal=0x7f0a001e;
+        public static final int step_mode_step_pocket=0x7f0a001f;
+        public static final int step_mode_tv_lightive=0x7f0a0021;
+        public static final int step_mode_tv_sensitive=0x7f0a001d;
+        /**  step_msg.xml 
+         */
+        public static final int step_msg_calorie=0x7f0a0022;
+        public static final int step_msg_distance=0x7f0a0024;
+        public static final int step_msg_speed=0x7f0a0026;
+        public static final int step_msg_tv_calorie=0x7f0a0023;
+        public static final int step_msg_tv_distance=0x7f0a0025;
+        public static final int step_msg_tv_speed=0x7f0a0027;
+        public static final int step_setting_age=0x7f0a0030;
+        public static final int step_setting_height=0x7f0a002a;
+        /**  step_setting.xml 
+         */
+        public static final int step_setting_sex=0x7f0a0028;
+        public static final int step_setting_steplen=0x7f0a002e;
+        public static final int step_setting_tv_age=0x7f0a0031;
+        public static final int step_setting_tv_height=0x7f0a002b;
+        public static final int step_setting_tv_sex=0x7f0a0029;
+        public static final int step_setting_tv_steplen=0x7f0a002f;
+        public static final int step_setting_tv_weight=0x7f0a002d;
+        public static final int step_setting_weight=0x7f0a002c;
+        public static final int tab_fragment_step_bt_control=0x7f0a0037;
+        public static final int tab_fragment_step_bt_reset=0x7f0a0036;
+        public static final int tab_fragment_step_goal=0x7f0a0033;
+        public static final int tab_fragment_step_tv_goal=0x7f0a0034;
+        /**  tab_fragment_step.xml 
+         */
+        public static final int tab_fragment_step_tv_percent=0x7f0a0032;
+        public static final int tab_fragment_step_tv_step=0x7f0a0035;
     }
     public static final class style {
         public static final int AnimationFade=0x7f0b008d;

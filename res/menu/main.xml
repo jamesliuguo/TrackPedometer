@@ -4,14 +4,10 @@
     tools:context="com.zhenqianfan13354468.trackpedometer.MainActivity" >
 
     <item
-        android:id="@+id/it_back"
+        android:id="@+id/it_about"
         android:orderInCategory="100"
-        android:title="后台运行"
+        android:title="setting"
         app:showAsAction="never"/>
-    <item
-        android:id="@+id/it_exit"
-        android:orderInCategory="100"
-        android:title="退出应用"
-        app:showAsAction="never"/>
+
 
 </menu>

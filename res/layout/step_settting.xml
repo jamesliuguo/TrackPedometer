@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="性别"
+            android:text="@string/step_setting_sex"
             android:textColor="#7B7B7B"
             android:textSize="15sp" />
 
@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="男"
+            android:text="@string/step_setting_tv_sex"
             android:textColor="@android:color/holo_blue_light"
             android:textSize="18sp" />
     </LinearLayout>
@@ -40,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="身高(cm)"
+            android:text="@string/step_setting_height"
             android:textColor="#7B7B7B"
             android:textSize="15sp" />
 
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:textColor="@android:color/holo_blue_light"
-            android:text="175"
+            android:text="@string/step_setting_tv_height"
             android:textSize="18sp" />
     </LinearLayout>
 
@@ -64,7 +64,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="体重(kg)"
+            android:text="@string/step_setting_weight"
             android:textColor="#7B7B7B"
             android:textSize="15sp" />
 
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:textColor="@android:color/holo_blue_light"
-            android:text="65"
+            android:text="@string/step_setting_tv_weight"
             android:textSize="18sp" />
     </LinearLayout>
 
@@ -90,7 +90,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="步长(cm)"
+            android:text="@string/step_setting_steplen"
             android:textColor="#7B7B7B"
             android:textSize="15sp" />
 
@@ -99,7 +99,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="50"
+            android:text="@string/step_setting_tv_steplen"
             android:textColor="@android:color/holo_blue_light"
             android:textSize="18sp" />
     </LinearLayout>
@@ -113,7 +113,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="年龄"
+            android:text="@string/step_setting_age"
             android:textColor="#7B7B7B"
             android:textSize="15sp" />
 
@@ -122,7 +122,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="24"
+            android:text="@string/step_setting_tv_age"
             android:textColor="@android:color/holo_blue_light"
             android:textSize="18sp" />
     </LinearLayout>
